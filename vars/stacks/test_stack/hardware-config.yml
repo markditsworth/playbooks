@@ -1,0 +1,12 @@
+hardware_configurations:
+  - name: master-node
+    gcp_disk_size: 10
+    gcp_image: projects/centos-cloud/global/images/centos-7-v20190515
+    gcp_machine_type: n1-standard-1
+    number_of_instances: 1
+
+  - name: worker-node
+    gcp_disk_size: 10
+    gcp_image: projects/centos-cloud/global/images/centos-7-v20190515
+    gcp_machine_type: n1-standard-1
+    number_of_instances: 3

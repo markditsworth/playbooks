@@ -1,0 +1,5 @@
+---
+- name: ensure variables are defined
+  assert:
+    that: "{{ item }} is defined"
+  with_items: "{{ variables }}"

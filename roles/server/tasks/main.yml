@@ -1,0 +1,53 @@
+---
+- name: ensure variables are defined
+  include_role:
+    name: args
+    tasks_from: main.yml
+  vars:
+    variables:
+      - number_of_instances
+      - name
+      - gcp_disk_size
+      - gcp_image
+      - gcp_machine_type
+      - gcp_zone
+      - gcp_region
+      - gcp_project
+      - gcp_cred
+
+- name: create {{ number_of_instances }} instances of {{ name }}
+  include_tasks: deploy.yml
+  vars:
+    disk_size: "{{ gcp_disk_size }}"
+    disk_name: "{{ name }}{{ count }}"
+    image: "{{ gcp_image }}"
+    machine_type: "{{ gcp_machine_type }}"
+    machine_name: "{{ name }}{{ count }}"
+    base_name: "{{ name }}"
+    address_name: "{{ name }}{{ count }}"
+    zone: "{{ gcp_zone }}"
+    region: "{{ gcp_region }}"
+    project: "{{ gcp_project }}"
+    cred: "{{ gcp_cred }}"
+  with_sequence: count={{ number_of_instances }} start=1
+  loop_control:
+    loop_var: count
+  when:
+    - number_of_instances is defined
+    - number_of_instances != '1'
+
+- name: create single instance
+  include_tasks: deploy.yml
+  vars:
+    disk_size: "{{ gcp_disk_size }}"
+    disk_name: "{{ name }}"
+    image: "{{ gcp_image }}"
+    machine_type: "{{ gcp_machine_type }}"
+    machine_name: "{{ name }}"
+    base_name: "{{ name }}"
+    address_name: "{{ name }}"
+    zone: "{{ gcp_zone }}"
+    region: "{{ gcp_region }}"
+    project: "{{ gcp_project }}"
+    cred: "{{ gcp_cred }}"
+  when: number_of_instances == '1' or number_of_instances is not defined

@@ -1,0 +1,30 @@
+#!/usr/bin/ansible-playbook
+---
+- hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: import variables
+      include_vars:
+        file: vars/stacks/{{ stack_tag }}/{{ item }}
+      with_items:
+        - hardware-config.yml
+        - stack-vars.yml
+
+    - name: debug stuff
+      debug:
+        msg: "{{ item.number_of_instances }}"
+      with_items: "{{ hardware_configurations }}"
+
+    - name: spin up hardware
+      include_role:
+        name: server
+        tasks_from: main.yml
+      vars:
+        name: "{{ hardware.name }}"
+        number_of_instances: "{{ hardware.number_of_instances }}"
+        gcp_disk_size: "{{ hardware.gcp_disk_size }}"
+        gcp_image: "{{ hardware.gcp_image }}"
+        gcp_machine_type: "{{ hardware.gcp_machine_type }}"
+      with_items: "{{ hardware_configurations }}"
+      loop_control:
+        loop_var: hardware

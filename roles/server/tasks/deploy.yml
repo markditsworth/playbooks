@@ -1,0 +1,90 @@
+---
+- name: ensure variables are defined
+  include_role:
+    name: args
+    tasks_from: main
+  vars:
+    variables:
+      - disk_size
+      - disk_name
+      - image
+      - machine_type
+      - machine_name
+      - base_name
+      - address_name
+      - zone
+      - region
+      - project
+      - cred
+
+- name: create disk for {{ disk_name }}
+  gcp_compute_disk:
+    name: "{{ disk_name }}"
+    size_gb: "{{ disk_size }}"
+    source_image: "{{ image }}"
+    zone: "{{ zone }}"
+    project: "{{ project }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ cred }}"
+    state: present
+  register: disk
+
+- name: create address for {{ address_name }}
+  gcp_compute_address:
+    name: "{{ address_name }}"
+    region: "{{ region }}"
+    project: "{{ project }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ cred }}"
+    state: present
+  register: address
+  when:
+    - static_ip is defined
+    - static_ip
+
+- name: create instance of {{ machine_name }}
+  gcp_compute_instance:
+    name: "{{ machine_name }}"
+    machine_type: "{{ machine_type }}"
+    metadata:
+      name: "{{ base_name }}"
+    disks:
+      - auto_delete: true
+        boot: true
+        source: "{{ disk }}"
+    network_interfaces:
+      - access_configs:
+        - name: External NAT
+          type: ONE_TO_ONE_NAT
+    zone: "{{ zone }}"
+    project: "{{ project }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ cred }}"
+    state: present
+  when:
+    - static_ip is not defined or not static_ip
+
+- name: create instance of {{ machine_name }}
+  gcp_compute_instance:
+    name: "{{ machine_name }}"
+    machine_type: "{{ machine_type }}"
+    metadata:
+      name: "{{ base_name }}"
+    disks:
+      - auto_delete: true
+        boot: true
+        source: "{{ disk }}"
+    network_interfaces:
+      - access_configs:
+        - name: External NAT
+          nat_ip: "{{ address }}"
+          type: ONE_TO_ONE_NAT
+    zone: "{{ zone }}"
+    project: "{{ project }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ cred }}"
+    state: present
+  when:
+    - static_ip is defined
+    - static_ip
+

@@ -1,22 +1,4 @@
 ---
-- name: ensure variables are defined
-  include_role:
-    name: args
-    tasks_from: main
-  vars:
-    variables:
-      - disk_size
-      - disk_name
-      - image
-      - machine_type
-      - machine_name
-      - base_name
-      - address_name
-      - zone
-      - region
-      - project
-      - cred
-
 - name: create disk for {{ disk_name }}
   gcp_compute_disk:
     name: "{{ disk_name }}"
@@ -46,8 +28,8 @@
   gcp_compute_instance:
     name: "{{ machine_name }}"
     machine_type: "{{ machine_type }}"
-    metadata:
-      name: "{{ base_name }}"
+    tags:
+      items: "{{ base_name }}"
     disks:
       - auto_delete: true
         boot: true
@@ -68,8 +50,8 @@
   gcp_compute_instance:
     name: "{{ machine_name }}"
     machine_type: "{{ machine_type }}"
-    metadata:
-      name: "{{ base_name }}"
+    tags:
+      items: "{{ base_name }}"
     disks:
       - auto_delete: true
         boot: true

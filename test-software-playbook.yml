@@ -1,0 +1,18 @@
+#!/usr/bin/ansible-playbook
+---
+- hosts: "tag_master-node"
+  become: yes
+  tasks:
+    - name: create directories in opt
+      file:
+        path: /opt/test_dir
+        state: directory
+        mode: 1755
+
+    - name: get contents of opt
+      command: ls /opt
+      register: file_contents
+
+    - name: make sure new folder is there
+      debug:
+        msg: "{{ file_contents.stdout }}"

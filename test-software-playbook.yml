@@ -1,0 +1,38 @@
+#!/usr/bin/ansible-playbook
+---
+- hosts: localhost
+  become: no
+  gather_facts: no
+  tasks:
+    - name: look at hostvars
+      debug:
+        var: "{{ hostvars }}"
+
+- hosts: tag_master-node
+  become: yes
+  tasks:
+    - name: get directory contents
+      command: ls /
+      register: dir_contents
+
+    - name: print contents
+      debug:
+        msg: "{{ dir_contents.stdout }}"
+
+- hosts: tag_worker-node
+  become: yes
+  tasks:
+    - name: make directory in /home
+      file:
+        path: /home/test_directory
+        state: directory
+        owner: root
+        group: root
+
+    - name: get contents of /home
+      command: ls /home
+      register: contents
+
+    - name: print contents
+      debug:
+        msg: "{{ contents.stdout }}"

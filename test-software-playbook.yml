@@ -1,18 +1,38 @@
 #!/usr/bin/ansible-playbook
 ---
-- hosts: "tag_master-node"
+- hosts: localhost
+  become: no
+  gather_facts: no
+  tasks:
+    - name: look at hostvars
+      debug:
+        var: "{{ hostvars }}"
+
+- hosts: tag_master-node
   become: yes
   tasks:
-    - name: create directories in opt
-      file:
-        path: /opt/test_dir
-        state: directory
-        mode: 1755
+    - name: get directory contents
+      command: ls /
+      register: dir_contents
 
-    - name: get contents of opt
-      command: ls /opt
-      register: file_contents
-
-    - name: make sure new folder is there
+    - name: print contents
       debug:
-        msg: "{{ file_contents.stdout }}"
+        msg: "{{ dir_contents.stdout }}"
+
+- hosts: tag_worker-node
+  become: yes
+  tasks:
+    - name: make directory in /home
+      file:
+        path: /home/test_directory
+        state: directory
+        owner: root
+        group: root
+
+    - name: get contents of /home
+      command: ls /home
+      register: contents
+
+    - name: print contents
+      debug:
+        msg: "{{ contents.stdout }}"

@@ -35,8 +35,9 @@
   when:
     - number_of_instances is defined
     - number_of_instances != '1'
+    - terminate is not defined or not terminate
 
-- name: create single instance
+- name: create single instance of {{ name }}
   include_tasks: deploy.yml
   vars:
     disk_size: "{{ gcp_disk_size }}"
@@ -50,4 +51,46 @@
     region: "{{ gcp_region }}"
     project: "{{ gcp_project }}"
     cred: "{{ gcp_cred }}"
-  when: number_of_instances == '1' or number_of_instances is not defined
+  when:
+    - number_of_instances == '1' or number_of_instances is not defined
+    - terminate is not defined or not terminate
+
+- name: terminate {{ number_of_instances }} instances of {{ name }}
+  include_tasks: terminate.yml
+  vars:
+    disk_size: "{{ gcp_disk_size }}"
+    disk_name: "{{ name }}{{ count }}"
+    image: "{{ gcp_image }}"
+    machine_type: "{{ gcp_machine_type }}"
+    machine_name: "{{ name }}{{ count }}"
+    base_name: "{{ name }}"
+    address_name: "{{ name }}{{ count }}"
+    zone: "{{ gcp_zone }}"
+    region: "{{ gcp_region }}"
+    project: "{{ gcp_project }}"
+    cred: "{{ gcp_cred }}"
+  with_sequence: count={{ number_of_instances }} start=1
+  loop_control:
+    loop_var: count
+  when:
+    - number_of_instances is defined
+    - number_of_instances != '1'
+    - terminate is defined
+    - terminate
+
+- name: terminate single instance of {{ name }}
+  include_tasks: terminate.yml
+  vars:
+    disk_name: "{{ name }}"
+    image: "{{ gcp_image }}"
+    machine_type: "{{ gcp_machine_type }}"
+    machine_name: "{{ name }}"
+    address_name: "{{ name }}"
+    zone: "{{ gcp_zone }}"
+    region: "{{ gcp_region }}"
+    project: "{{ gcp_project }}"
+    cred: "{{ gcp_cred }}"
+  when:
+    - number_of_instances == '1' or number_of_instances is not defined
+    - terminate is defined
+    - terminate

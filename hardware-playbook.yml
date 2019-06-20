@@ -1,4 +1,21 @@
 #!/usr/bin/ansible-playbook
+#
+# Spin up instances in GCP based on the stack configuration variables in vars/stacks. See vars/stacks/test_stack as a template.
+#
+# How to use:
+# Deploy entire stack
+# ./hardware-playbook.yml -e stack_tag=<stack_name>
+#
+# Deploy specific instance(s) of stack
+# ./hardware-playbook.yml -e stack_tag=<stack_name> -e stack_component=<instance_name>
+#
+# Terminate the stack
+# ./hardware-playbook.yml -e stack_tag=<stack_name> -e terminate=true
+#
+# Terminate a specific instance(s) of the stack
+# ./hardware-playbook.yml -e stack_tag=<stack_name> -e stack_component=<instance1_name,instance2_name> -e terminate=true
+#########
+
 ---
 - hosts: localhost
   gather_facts: false
@@ -10,10 +27,16 @@
         - hardware-config.yml
         - stack-vars.yml
 
+    - name: get stack components slated to spin up
+      set_fact:
+        hardware_to_spin: "{{ [(item.name in stack_component) | ternary(item,[])] + (hardware_to_spin | default([])) }}"
+      with_items: "{{ hardware_configurations }}"
+      when: stack_component is defined
+
     - name: debug stuff
       debug:
         msg: "{{ item.number_of_instances }}"
-      with_items: "{{ hardware_configurations }}"
+      with_items: "{{ hardware_to_spin | default(hardware_configurations) }}"
 
     - name: spin up hardware
       include_role:
@@ -25,6 +48,6 @@
         gcp_disk_size: "{{ hardware.gcp_disk_size }}"
         gcp_image: "{{ hardware.gcp_image }}"
         gcp_machine_type: "{{ hardware.gcp_machine_type }}"
-      with_items: "{{ hardware_configurations }}"
+      with_items: "{{ hardware_to_spin | default(hardware_configurations) }}"
       loop_control:
         loop_var: hardware

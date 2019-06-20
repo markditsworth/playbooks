@@ -1,0 +1,32 @@
+---
+- name: delete instance of {{ machine_name }}
+  gcp_compute_instance:
+    name: "{{ machine_name }}"
+    machine_type: "{{ machine_type }}"
+    zone: "{{ zone }}"
+    project: "{{ project }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ cred }}"
+    state: absent
+
+- name: delete disk for {{ disk_name }}
+  gcp_compute_disk:
+    name: "{{ disk_name }}"
+    source_image: "{{ image }}"
+    zone: "{{ zone }}"
+    project: "{{ project }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ cred }}"
+    state: absent
+
+- name: delete address for {{ address_name }}
+  gcp_compute_address:
+    name: "{{ address_name }}"
+    region: "{{ region }}"
+    project: "{{ project }}"
+    auth_kind: serviceaccount
+    service_account_file: "{{ cred }}"
+    state: absent
+  when:
+    - static_ip is defined
+    - static_ip

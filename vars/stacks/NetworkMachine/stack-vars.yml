@@ -1,0 +1,5 @@
+---
+gcp_region: us-central1
+gcp_zone: us-central1-a
+gcp_project: dark-hall-242703
+gcp_cred: /opt/ansible/dark-hall-242703-33c5034b12bf.json

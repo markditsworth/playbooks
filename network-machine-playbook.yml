@@ -1,0 +1,37 @@
+#!/usr/bin/ansible-playbook
+---
+- hosts: zen-master
+  become: yes
+  tasks:
+    - name: install docker
+      yum:
+        name:
+          - https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.6-3.3.el7.x86_64.rpm
+          - https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-cli-19.03.1-3.el7.x86_64.rpm
+          - https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-19.03.1-3.el7.x86_64.rpm
+        state: present
+
+    - name: mkdir for files
+      file:
+        path: /home/mwditsworth/Documents
+        state: directory
+        owner: mwditsworth
+        group: mwditsworth
+        recurse: yes
+
+    - name: copy custom files
+      copy:
+        src: "{{ item }}"
+        dest: /home/mwditsworth/Documents
+        owner: mwditsworth
+        group: mwditsworth
+      with_fileglob:
+        - files/NetworkMachine/*
+
+    - name: start docker
+      command: systemctl start docker
+
+    - name: build container
+      shell: docker build -t zen /home/mwditsworth/Documents 
+       
+

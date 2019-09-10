@@ -30,8 +30,18 @@
 
     - name: start docker
       command: systemctl start docker
+      when: zen | default(true)
 
-    - name: build container
-      shell: docker build -t zen /home/mwditsworth/Documents 
+    - name: build zen container
+      shell: docker build -t zen /home/mwditsworth/Documents
+      when: zen | default(true) 
+
+    - name: install mfinder
+      src: /home/mwditsworth/Documents/mfinder1.21_unix.tar
+      dest: /home/mwditsworth/Documents
+      owner: mwditsworth
+      group: mwditsworth
+      when: mfinder | default(false)
+
        
 
